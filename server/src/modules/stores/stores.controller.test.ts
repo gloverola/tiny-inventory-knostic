@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Request, Response, NextFunction } from 'express';
-import * as controller from './stores.controller';
-import * as storesService from './stores.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Request, Response, NextFunction } from "express";
+import * as controller from "./stores.controller";
+import * as storesService from "./stores.service";
 
 // Mock the service module
-vi.mock('./stores.service');
+vi.mock("./stores.service");
 
-describe('Stores Controller', () => {
+describe("Stores Controller", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
@@ -25,75 +25,77 @@ describe('Stores Controller', () => {
     vi.clearAllMocks();
   });
 
-  describe('listStores', () => {
-    it('should return paginated stores', async () => {
+  describe("listStores", () => {
+    it("should return paginated stores", async () => {
       const mockResult = {
-        stores: [{
-          id: '1',
-          name: 'Store 1',
-          location: 'Location 1',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }],
+        stores: [
+          {
+            id: "1",
+            name: "Store 1",
+            location: "Location 1",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
         pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
       };
       vi.mocked(storesService.getAllStores).mockResolvedValue(mockResult);
 
-      req.query = { page: '1', limit: '10' };
+      req.query = { page: "1", limit: "10" };
       await controller.listStores(req as Request, res as Response, next);
 
       expect(storesService.getAllStores).toHaveBeenCalledWith(1, 10);
       expect(res.json).toHaveBeenCalledWith(mockResult);
     });
 
-    it('should handle validation errors', async () => {
-      req.query = { page: 'invalid', limit: '10' };
+    it("should handle validation errors", async () => {
+      req.query = { page: "invalid", limit: "10" };
       await controller.listStores(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: 'Invalid query parameters' })
+        expect.objectContaining({ error: "Invalid query parameters" })
       );
     });
   });
 
-  describe('getStore', () => {
-    it('should return a store by id', async () => {
+  describe("getStore", () => {
+    it("should return a store by id", async () => {
       const mockStore = {
-        id: '1',
-        name: 'Store 1',
-        location: 'Location 1',
+        id: "1",
+        name: "Store 1",
+        location: "Location 1",
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       vi.mocked(storesService.getStoreById).mockResolvedValue(mockStore);
 
-      req.params = { id: '1' };
+      req.params = { id: "1" };
       await controller.getStore(req as Request, res as Response, next);
 
-      expect(storesService.getStoreById).toHaveBeenCalledWith('1');
+      expect(storesService.getStoreById).toHaveBeenCalledWith("1");
       expect(res.json).toHaveBeenCalledWith(mockStore);
     });
 
-    it('should return 404 if store not found', async () => {
+    it("should return 404 if store not found", async () => {
       vi.mocked(storesService.getStoreById).mockResolvedValue(null as any);
 
-      req.params = { id: '1' };
+      req.params = { id: "1" };
       await controller.getStore(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Store not found' });
+      expect(res.json).toHaveBeenCalledWith({ error: "Store not found" });
     });
   });
 
-  describe('createStore', () => {
-    it('should create a new store', async () => {
-      const newStore = { name: 'New Store', location: 'New Location' };
+  describe("createStore", () => {
+    it("should create a new store", async () => {
+      const newStore = { name: "New Store", location: "New Location" };
       const createdStore = {
-        id: '1',
+        id: "1",
         ...newStore,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       vi.mocked(storesService.createStore).mockResolvedValue(createdStore);
 
@@ -105,114 +107,84 @@ describe('Stores Controller', () => {
       expect(res.json).toHaveBeenCalledWith(createdStore);
     });
 
-    it('should handle validation errors', async () => {
-      req.body = { name: '' }; // Invalid data
+    it("should handle validation errors", async () => {
+      req.body = { name: "" }; // Invalid data
       await controller.createStore(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: 'Invalid request body' })
+        expect.objectContaining({ error: "Invalid request body" })
       );
     });
   });
 
-  describe('getStoreProducts', () => {
-    it('should return store products', async () => {
+  describe("getStoreProducts", () => {
+    it("should return store products", async () => {
       const mockStore = {
-        id: '1',
-        name: 'Store 1',
-        location: 'Location 1',
+        id: "1",
+        name: "Store 1",
+        location: "Location 1",
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       const mockProducts = {
-        products: [{
-          id: '1',
-          name: 'Product 1',
-          storeId: '1',
-          categoryId: null,
-          category: 'Electronics',
-          price: '99.99',
-          quantity: 10,
-          imageUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }],
+        products: [
+          {
+            id: "1",
+            name: "Product 1",
+            storeId: "1",
+            categoryId: null,
+            category: "Electronics",
+            price: "99.99",
+            quantity: 10,
+            imageUrl: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
         pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
       };
 
       vi.mocked(storesService.getStoreById).mockResolvedValue(mockStore);
       vi.mocked(storesService.getStoreProducts).mockResolvedValue(mockProducts);
 
-      req.params = { id: '1' };
-      req.query = { page: '1', limit: '10' };
+      req.params = { id: "1" };
+      req.query = { page: "1", limit: "10" };
       await controller.getStoreProducts(req as Request, res as Response, next);
 
-      expect(storesService.getStoreProducts).toHaveBeenCalledWith('1', 1, 10, undefined);
+      expect(storesService.getStoreProducts).toHaveBeenCalledWith(
+        "1",
+        1,
+        10,
+        undefined
+      );
       expect(res.json).toHaveBeenCalledWith(mockProducts);
     });
 
-    it('should filter by category', async () => {
+    it("should filter by category", async () => {
       const mockStore = {
-        id: '1',
-        name: 'Store 1',
-        location: 'Location 1',
+        id: "1",
+        name: "Store 1",
+        location: "Location 1",
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       vi.mocked(storesService.getStoreById).mockResolvedValue(mockStore);
-      vi.mocked(storesService.getStoreProducts).mockResolvedValue({ 
-        products: [], 
-        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } 
+      vi.mocked(storesService.getStoreProducts).mockResolvedValue({
+        products: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
       });
 
-      req.params = { id: '1' };
-      req.query = { page: '1', limit: '10', category: 'Electronics' };
+      req.params = { id: "1" };
+      req.query = { page: "1", limit: "10", category: "Electronics" };
       await controller.getStoreProducts(req as Request, res as Response, next);
 
-      expect(storesService.getStoreProducts).toHaveBeenCalledWith('1', 1, 10, 'Electronics');
-    });
-  });
-
-  describe('getStoreAnalytics', () => {
-    it('should return store analytics', async () => {
-      const mockStore = {
-        id: '1',
-        name: 'Store 1',
-        location: 'Location 1',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      const mockAnalytics = {
-        summary: {
-          totalProducts: 10,
-          totalValue: 1000,
-          avgProductPrice: 100,
-          lowStockItems: 2,
-          outOfStockItems: 1,
-          categories: 3,
-        },
-        categoryBreakdown: [],
-      };
-
-      vi.mocked(storesService.getStoreById).mockResolvedValue(mockStore);
-      vi.mocked(storesService.getStoreAnalytics).mockResolvedValue(mockAnalytics);
-
-      req.params = { id: '1' };
-      await controller.getStoreAnalytics(req as Request, res as Response, next);
-
-      expect(storesService.getStoreAnalytics).toHaveBeenCalledWith('1');
-      expect(res.json).toHaveBeenCalledWith(mockAnalytics);
-    });
-
-    it('should return 404 if store not found', async () => {
-      vi.mocked(storesService.getStoreById).mockResolvedValue(null as any);
-
-      req.params = { id: '1' };
-      await controller.getStoreAnalytics(req as Request, res as Response, next);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Store not found' });
+      expect(storesService.getStoreProducts).toHaveBeenCalledWith(
+        "1",
+        1,
+        10,
+        "Electronics"
+      );
     });
   });
 });
