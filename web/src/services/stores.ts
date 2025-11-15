@@ -28,10 +28,3 @@ export const getStoreProducts = async (storeId: any): Promise<any> => {
     return response.data
   }
 }
-
-export const getStoreAnalytics = async (storeId: any): Promise<any> => {
-  if (storeId) {
-    const response = await api.get(`/stores/${storeId}/analytics`)
-    return response.data
-  }
-}
