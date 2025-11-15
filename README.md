@@ -116,7 +116,6 @@ GET    /stores                     # List stores (paginated)
 POST   /stores                     # Create store
 GET    /stores/:id                 # Store details
 GET    /stores/:id/products        # Products scoped to a store (paginated + category filter)
-GET    /stores/:id/analytics       # Aggregated analytics for dashboard/store tabs
 
 GET    /products                   # List products (search + category + stock filters)
 GET    /products/:id               # Product details
@@ -130,46 +129,6 @@ PATCH  /categories/:id             # Update category
 DELETE /categories/:id             # Delete category
 
 GET    /health                     # Health probe for Docker/devops
-```
-
-Standardized Response Format
-
-API responses return JSON objects with domain data and metadata (no extra envelope). Examples:
-
-Single resource:
-
-```json
-{
-  "id": "a3b6...",
-  "name": "Main Street Market",
-  "location": "Austin, TX",
-  "createdAt": "2024-03-01T12:00:00.000Z"
-}
-```
-
-Paginated collection:
-
-```json
-{
-  "stores": [{ "id": "a3b6...", "name": "Main Street Market" }],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 42,
-    "totalPages": 5
-  }
-}
-```
-
-Error response:
-
-```json
-{
-  "error": "Invalid query parameters",
-  "details": [
-    { "path": ["page"], "message": "Number must be greater than or equal to 1" }
-  ]
-}
 ```
 
 Benefits:
@@ -298,30 +257,6 @@ Architecture Decisions
 - **Zod at the boundary:** Schemas provide runtime safety and descriptive errors for both backend and frontend forms.
 - **Shared URL/table hook:** Owning `useTableUrlState` brings powerful UX (shareable filters) but increases custom code to maintain.
 - **Cookie-backed theming:** Theme choices persist across sessions with zero backend requirements, but we must maintain the provider + command/menu wiring ourselves.
-
-Non-trivial Operation
-
-Store Analytics Endpoint (`GET /stores/:id/analytics`)
-
-- Aggregates total value, average price, low/out-of-stock counts, and per-category breakdown using a single SQL query (SUM, AVG, COUNT DISTINCT, CASE).
-- Feeds the dashboard summary cards and the Store Detail analytics tab without multiple round-trips.
-- Example response:
-
-```json
-{
-  "summary": {
-    "totalProducts": 1248,
-    "totalValue": 45231.89,
-    "avgProductPrice": 36.24,
-    "lowStockItems": 23,
-    "outOfStockItems": 5,
-    "categories": 8
-  },
-  "categoryBreakdown": [
-    { "category": "Electronics", "count": 245, "totalValue": 15420.5 }
-  ]
-}
-```
 
 Production Readiness
 
