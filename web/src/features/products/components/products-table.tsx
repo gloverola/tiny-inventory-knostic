@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { categoriesQuery } from '@/features/categories/queries'
 import { productsQuery } from '../queries'
 import { DataTableBulkActions } from './data-table-bulk-actions'
@@ -235,14 +236,10 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  Loading products...
-                </TableCell>
-              </TableRow>
+              <TableSkeleton
+                columns={columns.length}
+                rows={pagination.pageSize}
+              />
             ) : isError ? (
               <TableRow>
                 <TableCell

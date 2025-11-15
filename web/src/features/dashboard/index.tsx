@@ -1,8 +1,9 @@
+import { faker } from '@faker-js/faker'
 import {
   Package,
   DollarSign,
-  TrendingDown,
-  AlertTriangle,
+  Store,
+  Users,
   Grid3x3,
   TrendingUp,
 } from 'lucide-react'
@@ -21,25 +22,46 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
 
+// Generate fake store data
+const generateStoresBreakdown = () => {
+  const stores = [
+    'Downtown Electronics',
+    'Tech Haven',
+    'Gadget World',
+    'Digital Store',
+    'Tech Paradise',
+  ]
+
+  return stores.map((store) => ({
+    category: store,
+    count: faker.number.int({ min: 50, max: 300 }),
+    totalValue: faker.number.float({
+      min: 5000,
+      max: 25000,
+      fractionDigits: 2,
+    }),
+  }))
+}
+
 export function Dashboard() {
-  // TODO: Fetch this data from the backend
   const analytics = {
     summary: {
-      totalProducts: 1248,
-      totalValue: 45231.89,
-      avgProductPrice: 36.24,
-      lowStockItems: 23,
-      outOfStockItems: 5,
-      categories: 8,
+      totalStores: faker.number.int({ min: 5, max: 15 }),
+      totalProducts: faker.number.int({ min: 800, max: 2000 }),
+      totalCustomers: faker.number.int({ min: 500, max: 5000 }),
+      totalCategories: faker.number.int({ min: 8, max: 20 }),
+      totalInventoryValue: faker.number.float({
+        min: 40000,
+        max: 100000,
+        fractionDigits: 2,
+      }),
+      totalRevenue: faker.number.float({
+        min: 80000,
+        max: 200000,
+        fractionDigits: 2,
+      }),
     },
-    categoryBreakdown: [
-      { category: 'Electronics', count: 245, totalValue: 15420.5 },
-      { category: 'Clothing', count: 412, totalValue: 12150.3 },
-      { category: 'Food', count: 189, totalValue: 5680.2 },
-      { category: 'Books', count: 156, totalValue: 3920.1 },
-      { category: 'Furniture', count: 98, totalValue: 4560.8 },
-      { category: 'Toys', count: 148, totalValue: 3499.99 },
-    ],
+    storesBreakdown: generateStoresBreakdown(),
   }
 
   return (
@@ -63,6 +85,22 @@ export function Dashboard() {
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
+                  Total Stores
+                </CardTitle>
+                <Store className='text-muted-foreground h-4 w-4' />
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>
+                  {analytics.summary.totalStores.toLocaleString()}
+                </div>
+                <p className='text-muted-foreground text-xs'>
+                  Active store locations
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                <CardTitle className='text-sm font-medium'>
                   Total Products
                 </CardTitle>
                 <Package className='text-muted-foreground h-4 w-4' />
@@ -79,6 +117,38 @@ export function Dashboard() {
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
+                  Total Customers
+                </CardTitle>
+                <Users className='text-muted-foreground h-4 w-4' />
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>
+                  {analytics.summary.totalCustomers.toLocaleString()}
+                </div>
+                <p className='text-muted-foreground text-xs'>
+                  Registered customers
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Total Categories
+                </CardTitle>
+                <Grid3x3 className='text-muted-foreground h-4 w-4' />
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>
+                  {analytics.summary.totalCategories}
+                </div>
+                <p className='text-muted-foreground text-xs'>
+                  Product categories
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                <CardTitle className='text-sm font-medium'>
                   Total Inventory Value
                 </CardTitle>
                 <DollarSign className='text-muted-foreground h-4 w-4' />
@@ -86,10 +156,13 @@ export function Dashboard() {
               <CardContent>
                 <div className='text-2xl font-bold'>
                   $
-                  {analytics.summary.totalValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  {analytics.summary.totalInventoryValue.toLocaleString(
+                    'en-US',
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }
+                  )}
                 </div>
                 <p className='text-muted-foreground text-xs'>
                   Total stock value
@@ -99,64 +172,20 @@ export function Dashboard() {
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
-                  Avg. Product Price
+                  Total Revenue
                 </CardTitle>
                 <TrendingUp className='text-muted-foreground h-4 w-4' />
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  ${analytics.summary.avgProductPrice.toFixed(2)}
+                  $
+                  {analytics.summary.totalRevenue.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
                 <p className='text-muted-foreground text-xs'>
-                  Average price per item
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Low Stock Items
-                </CardTitle>
-                <TrendingDown className='text-muted-foreground h-4 w-4' />
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>
-                  {analytics.summary.lowStockItems}
-                </div>
-                <p className='text-muted-foreground text-xs'>
-                  Items below 10 units
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Out of Stock
-                </CardTitle>
-                <AlertTriangle className='text-muted-foreground h-4 w-4' />
-              </CardHeader>
-              <CardContent>
-                <div className='text-destructive text-2xl font-bold'>
-                  {analytics.summary.outOfStockItems}
-                </div>
-                <p className='text-muted-foreground text-xs'>
-                  Items needing restock
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Categories
-                </CardTitle>
-                <Grid3x3 className='text-muted-foreground h-4 w-4' />
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>
-                  {analytics.summary.categories}
-                </div>
-                <p className='text-muted-foreground text-xs'>
-                  Product categories
+                  All-time revenue
                 </p>
               </CardContent>
             </Card>
@@ -164,13 +193,13 @@ export function Dashboard() {
           <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
             <Card className='col-span-1 lg:col-span-4'>
               <CardHeader>
-                <CardTitle>Category Breakdown</CardTitle>
+                <CardTitle>Store Revenue Breakdown</CardTitle>
                 <CardDescription>
-                  Inventory distribution by category
+                  Revenue distribution across stores
                 </CardDescription>
               </CardHeader>
               <CardContent className='ps-2'>
-                <Overview data={analytics.categoryBreakdown} />
+                <Overview data={analytics.storesBreakdown} />
               </CardContent>
             </Card>
             <Card className='col-span-1 lg:col-span-3'>
