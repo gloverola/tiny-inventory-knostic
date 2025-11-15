@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+WORKDIR /web
+
+# Copy package files first for better caching
+COPY web/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application
+COPY web/ ./
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev"]

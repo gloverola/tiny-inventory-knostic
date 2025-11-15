@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tiny-inventory-db
+    environment:
+      POSTGRES_USER: inventory
+      POSTGRES_PASSWORD: inventory
+      POSTGRES_DB: inventory
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventory"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  # React Frontend (SPA)
+  spa:
+    container_name: knostics-spa
+    build:
+      context: .
+      dockerfile: Dockerfile.spa
+    ports:
+      - "5173:5173"
+    environment:
+      - PORT=5173
+      - VITE_API_URL=http://localhost:3000
+    volumes:
+      - ./web:/web
+      - /web/node_modules
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node.js Backend (API)
+  app:
+    build: ./server
+    container_name: tiny-inventory-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://inventory:inventory@db:5432/inventory
+      PORT: 3000
+      HOST: 0.0.0.0
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: sh -c "npm run build && npm run db:migrate && npm run db:seed && npm start"
+    volumes:
+      - ./server/src:/app/src
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
