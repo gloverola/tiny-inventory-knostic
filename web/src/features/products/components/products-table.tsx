@@ -190,7 +190,7 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Filter products...'
+        searchPlaceholder='Search products...'
         searchKey='name'
         filters={[
           {
