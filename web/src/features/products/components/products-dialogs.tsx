@@ -1,8 +1,10 @@
+import { useParams } from '@tanstack/react-router'
 import { ProductsActionDialog } from './products-action-dialog'
 import { ProductsDeleteDialog } from './products-delete-dialog'
 import { useProducts } from './products-provider'
 
 export function ProductsDialogs() {
+  const { storeId } = useParams({ strict: false })
   const { open, setOpen, currentRow, setCurrentRow } = useProducts()
   return (
     <>
@@ -10,6 +12,7 @@ export function ProductsDialogs() {
         key='product-add'
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
+        storeId={storeId}
       />
 
       {currentRow && (

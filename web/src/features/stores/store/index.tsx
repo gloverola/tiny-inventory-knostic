@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
+import { useParams, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,6 +13,7 @@ import { StoreAnalytics } from './store-analytics'
 import { StoreProducts } from './store-products'
 
 function StoreDetails() {
+  const router = useRouter()
   const { storeId } = useParams({ from: '/_authenticated/stores/$storeId' })
 
   const {
@@ -35,7 +36,11 @@ function StoreDetails() {
       </Header>
 
       <Main>
-        <Button className='p-0!' variant='ghost'>
+        <Button
+          className='p-0!'
+          variant='ghost'
+          onClick={() => router.history.back()}
+        >
           <ArrowLeftIcon /> Stores
         </Button>
         <div className='mt-4 mb-4'>

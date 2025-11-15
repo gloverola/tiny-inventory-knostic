@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { deleteProduct } from '@/services/products'
 import { AlertTriangle } from 'lucide-react'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,13 +22,36 @@ export function ProductsDeleteDialog({
   onOpenChange,
   currentRow,
 }: ProductDeleteDialogProps) {
+  const queryClient = useQueryClient()
   const [value, setValue] = useState('')
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: deleteProduct,
+    mutationKey: ['delete-product'],
+  })
 
   const handleDelete = () => {
     if (value.trim() !== currentRow.name) return
 
-    onOpenChange(false)
-    showSubmittedData(currentRow, 'The following product has been deleted:')
+    toast.promise(
+      mutateAsync(currentRow.id, {
+        onSuccess: (_data) => {
+          queryClient.invalidateQueries({ queryKey: ['products'] })
+          queryClient.invalidateQueries({ queryKey: ['stores'] })
+          queryClient.invalidateQueries({ queryKey: ['store-products'] })
+          onOpenChange(false)
+        },
+        onError: (error) => {
+          toast.error(
+            error.message || 'Error deleting product, please try again'
+          )
+        },
+      }),
+      {
+        loading: 'Deleting product...',
+        success: 'Product deleted successfully',
+      }
+    )
   }
 
   return (
@@ -34,7 +59,7 @@ export function ProductsDeleteDialog({
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== currentRow.name}
+      disabled={value.trim() !== currentRow.name || isPending}
       title={
         <span className='text-destructive'>
           <AlertTriangle
@@ -54,14 +79,14 @@ export function ProductsDeleteDialog({
             This cannot be undone.
           </p>
 
-          <Label className='my-2'>
-            Product Name:
+          <div>
+            <Label className='my-2'>Product Name</Label>
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder='Enter product name to confirm deletion.'
             />
-          </Label>
+          </div>
 
           <Alert variant='destructive'>
             <AlertTitle>Warning!</AlertTitle>

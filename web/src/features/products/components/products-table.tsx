@@ -24,6 +24,7 @@ import {
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { categoriesQuery } from '@/features/categories/queries'
+import { storeProductsQuery } from '@/features/stores/queries'
 import { productsQuery } from '../queries'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { productsColumns as columns } from './products-columns'
@@ -31,9 +32,10 @@ import { productsColumns as columns } from './products-columns'
 type DataTableProps = {
   search: Record<string, unknown>
   navigate: NavigateFn
+  storeId?: string
 }
 
-export function ProductsTable({ search, navigate }: DataTableProps) {
+export function ProductsTable({ search, navigate, storeId }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
@@ -137,12 +139,30 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
     isError,
   } = useQuery(productsQuery(queryParams))
 
+  const {
+    data: storeProductsData,
+    isLoading: isLoadingStoreProducts,
+    isError: isStoreProductsError,
+  } = useQuery(
+    storeProductsQuery(
+      storeId,
+      {
+        enabled: !!storeId,
+      },
+      queryParams
+    )
+  )
+
   const { data: categoriesData } = useQuery(
     categoriesQuery({ page: 1, limit: 100 })
   )
 
-  const tableData = productsData?.products ?? []
-  const rowCount = productsData?.pagination?.total ?? 0
+  const tableData = !storeId
+    ? (productsData?.products ?? [])
+    : ((storeProductsData as any)?.products ?? [])
+  const rowCount = !storeId
+    ? (productsData?.pagination?.total ?? 0)
+    : ((storeProductsData as any)?.pagination?.total ?? 0)
 
   const categoryOptions =
     categoriesData?.items
@@ -235,12 +255,12 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoading || isLoadingStoreProducts ? (
               <TableSkeleton
                 columns={columns.length}
                 rows={pagination.pageSize}
               />
-            ) : isError ? (
+            ) : isError || isStoreProductsError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

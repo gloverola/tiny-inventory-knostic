@@ -22,9 +22,16 @@ export const getStore = async (storeId: any): Promise<any> => {
   }
 }
 
-export const getStoreProducts = async (storeId: any): Promise<any> => {
+export const getStoreProducts = async (
+  storeId: any,
+  params: any
+): Promise<any> => {
   if (storeId) {
-    const response = await api.get(`/stores/${storeId}/products`)
+    const queryParams = createParams({
+      ...params,
+    })
+
+    const response = await api.get(`/stores/${storeId}/products?${queryParams}`)
     return response.data
   }
 }

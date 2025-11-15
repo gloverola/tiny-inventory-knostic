@@ -34,14 +34,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-40'>
         <DropdownMenuItem
-          onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('update')
-          }}
-        >
-          Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem
           onClick={() =>
             navigate({
               to: `/stores/${row.original.id}`,

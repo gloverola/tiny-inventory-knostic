@@ -30,38 +30,43 @@ import { categoriesQuery } from '@/features/categories/queries'
 import { storesQuery } from '@/features/stores/queries'
 import { type Product } from '../schema'
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Product name is required.'),
-  category: z.string().min(1, 'Category is required.'),
-  price: z
-    .string()
-    .min(1, 'Price is required.')
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: 'Price must be a positive number.',
-    }),
-  quantity: z
-    .string()
-    .min(1, 'Quantity is required.')
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: 'Quantity must be a non-negative number.',
-    })
-    .refine((val) => Number.isInteger(Number(val)), {
-      message: 'Quantity must be a whole number.',
-    }),
-  storeId: z.string().min(1, 'Store is required.'),
-  imageUrl: z.string().optional(),
-})
+const createFormSchema = (isStoreIdProvided: boolean) =>
+  z.object({
+    name: z.string().min(1, 'Product name is required.'),
+    category: z.string().min(1, 'Category is required.'),
+    price: z
+      .string()
+      .min(1, 'Price is required.')
+      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+        message: 'Price must be a positive number.',
+      }),
+    quantity: z
+      .string()
+      .min(1, 'Quantity is required.')
+      .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+        message: 'Quantity must be a non-negative number.',
+      })
+      .refine((val) => Number.isInteger(Number(val)), {
+        message: 'Quantity must be a whole number.',
+      }),
+    storeId: isStoreIdProvided
+      ? z.string().optional()
+      : z.string().min(1, 'Store is required.'),
+    imageUrl: z.string().optional(),
+  })
 
-type ProductForm = z.infer<typeof formSchema>
+type ProductForm = z.infer<ReturnType<typeof createFormSchema>>
 
 type ProductActionDialogProps = {
   currentRow?: Product
+  storeId?: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function ProductsActionDialog({
   currentRow,
+  storeId,
   open,
   onOpenChange,
 }: ProductActionDialogProps) {
@@ -73,24 +78,17 @@ export function ProductsActionDialog({
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createProduct,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stores'] })
-    },
     mutationKey: ['create-product'],
   })
 
   const { mutateAsync: productUpdate, isPending: isUpdating } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updateProduct(id, data),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stores'] })
-    },
     mutationKey: ['update-product'],
   })
 
   const isEdit = !!currentRow
+  const formSchema = createFormSchema(!!storeId)
   const form = useForm<ProductForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -99,7 +97,7 @@ export function ProductsActionDialog({
           category: currentRow.category,
           price: currentRow.price.toString(),
           quantity: currentRow.quantity.toString(),
-          storeId: currentRow.storeId,
+          storeId: storeId ? storeId : currentRow.storeId,
           imageUrl: currentRow.imageUrl || '',
         }
       : {
@@ -107,7 +105,7 @@ export function ProductsActionDialog({
           category: '',
           price: '',
           quantity: '',
-          storeId: '',
+          storeId: storeId || '',
           imageUrl: '',
         },
   })
@@ -118,6 +116,7 @@ export function ProductsActionDialog({
       price: Number(values.price),
       quantity: Number(values.quantity),
       imageUrl: values.imageUrl || undefined,
+      storeId: storeId ? storeId : values.storeId,
     }
 
     // Remove null/undefined values
@@ -133,6 +132,7 @@ export function ProductsActionDialog({
             onSuccess: (_data) => {
               queryClient.invalidateQueries({ queryKey: ['products'] })
               queryClient.invalidateQueries({ queryKey: ['stores'] })
+              queryClient.invalidateQueries({ queryKey: ['store-products'] })
               form.reset()
               onOpenChange(false)
             },
@@ -148,6 +148,7 @@ export function ProductsActionDialog({
               onSuccess: (_data) => {
                 queryClient.invalidateQueries({ queryKey: ['products'] })
                 queryClient.invalidateQueries({ queryKey: ['stores'] })
+                queryClient.invalidateQueries({ queryKey: ['store-products'] })
                 form.reset()
                 onOpenChange(false)
               },
@@ -271,26 +272,28 @@ export function ProductsActionDialog({
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name='storeId'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Store</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value}
-                      onValueChange={field.onChange}
-                      placeholder='Select a store'
-                      items={stores?.stores?.map((store: any) => ({
-                        label: `${store.name} - ${store.location}`,
-                        value: store.id,
-                      }))}
-                      className='w-full'
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!storeId && (
+                <FormField
+                  control={form.control}
+                  name='storeId'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Store</FormLabel>
+                      <SelectDropdown
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                        placeholder='Select a store'
+                        items={stores?.stores?.map((store: any) => ({
+                          label: `${store.name} - ${store.location}`,
+                          value: store.id,
+                        }))}
+                        className='w-full'
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name='imageUrl'
