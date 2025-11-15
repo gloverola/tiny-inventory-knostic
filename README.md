@@ -1,5 +1,6 @@
-Tiny Inventory | GLOVER OLAOLUWA
-Full-stack inventory management system for tracking stores, analytics, and product catalogs. Built with Express, PostgreSQL, React 18, TanStack Router/Query, and TypeScript to showcase senior-level frontend architecture on top of a pragmatic API.
+## Tiny Inventory | GLOVER OLAOLUWA
+
+A full-stack inventory management system for tracking stores, analytics, and product catalogs. Built with Express, PostgreSQL, React 18, TanStack Router/Query, and TypeScript to showcase senior-level frontend architecture on top of a pragmatic API.
 
 Quick Start
 
