@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { EmptyState } from '@/components/data-table/empty-state'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { categoriesQuery, productsQuery } from '../queries'
 import { DataTableBulkActions } from './data-table-bulk-actions'
@@ -49,7 +50,10 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
   } = useTableUrlState({
     search,
     navigate,
-    pagination: { defaultPage: 1, defaultPageSize: 10 },
+    pagination: {
+      defaultPage: 1,
+      defaultPageSize: 10,
+    },
     globalFilter: { enabled: false },
     columnFilters: [
       { columnId: 'name', searchKey: 'name', type: 'string' },
@@ -57,20 +61,16 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
         columnId: 'category',
         searchKey: 'category',
         type: 'array',
-        // Serialize array to comma-separated string for URL
         serialize: (value: unknown) => {
           if (Array.isArray(value) && value.length > 0) {
             return value
           }
           return undefined
         },
-        // Deserialize - handle both array (from route schema) and string
         deserialize: (value: unknown) => {
-          // If it's already an array (from route schema), return it
           if (Array.isArray(value)) {
             return value
           }
-          // If it's a string, split by comma
           if (typeof value === 'string' && value.trim() !== '') {
             return value
               .split(',')
@@ -84,20 +84,16 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
         columnId: 'quantity',
         searchKey: 'stock',
         type: 'array',
-        // Serialize array for URL
         serialize: (value: unknown) => {
           if (Array.isArray(value) && value.length > 0) {
             return value
           }
           return undefined
         },
-        // Deserialize - handle both array (from route schema) and string
         deserialize: (value: unknown) => {
-          // If it's already an array (from route schema), return it
           if (Array.isArray(value)) {
             return value
           }
-          // If it's a string, split by comma
           if (typeof value === 'string' && value.trim() !== '') {
             return value
               .split(',')
@@ -263,15 +259,6 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
                 columns={columns.length}
                 rows={pagination.pageSize}
               />
-            ) : isError ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='text-destructive h-24 text-center'
-                >
-                  Error loading products. Please try again.
-                </TableCell>
-              </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -296,19 +283,24 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
                   ))}
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
+            ) : null}
           </TableBody>
         </Table>
       </div>
+      {!isLoading && !isError && !table.getRowModel().rows?.length && (
+        <EmptyState
+          title='No products found'
+          description="We couldn't find any products matching your criteria. Try adjusting your filters or search term."
+          size='md'
+        />
+      )}
+      {!isLoading && isError && (
+        <EmptyState
+          title='Error loading products'
+          description='Error loading products from the server. Please try again.'
+          size='md'
+        />
+      )}
       <DataTablePagination table={table} className='mt-auto' />
       <DataTableBulkActions table={table} />
     </div>
@@ -323,7 +315,7 @@ const STOCK_STATUS = [
 
 const PRICE_RANGES = {
   MIN: [
-    { label: '$0+', value: '0' },
+    { label: '$2+', value: '2' },
     { label: '$10+', value: '10' },
     { label: '$50+', value: '50' },
     { label: '$100+', value: '100' },

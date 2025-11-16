@@ -50,6 +50,7 @@ export const productsColumns: ColumnDef<Product>[] = [
       </div>
     ),
     enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: 'name',
@@ -164,14 +165,14 @@ export const productsColumns: ColumnDef<Product>[] = [
   {
     id: 'minPrice',
     accessorFn: (row) => row.price,
-    enableHiding: true,
+    enableHiding: false,
     enableSorting: false,
     enableColumnFilter: true,
   },
   {
     id: 'maxPrice',
     accessorFn: (row) => row.price,
-    enableHiding: true,
+    enableHiding: false,
     enableSorting: false,
     enableColumnFilter: true,
   },

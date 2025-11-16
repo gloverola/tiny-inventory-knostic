@@ -23,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { EmptyState } from '@/components/data-table/empty-state'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { DataTableBulkActions } from '@/features/products/components/data-table-bulk-actions'
 import { productsColumns as columns } from '@/features/products/components/products-columns'
@@ -60,20 +61,16 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
         columnId: 'category',
         searchKey: 'category',
         type: 'array',
-        // Serialize array to comma-separated string for URL
         serialize: (value: unknown) => {
           if (Array.isArray(value) && value.length > 0) {
             return value
           }
           return undefined
         },
-        // Deserialize - handle both array (from route schema) and string
         deserialize: (value: unknown) => {
-          // If it's already an array (from route schema), return it
           if (Array.isArray(value)) {
             return value
           }
-          // If it's a string, split by comma
           if (typeof value === 'string' && value.trim() !== '') {
             return value
               .split(',')
@@ -87,20 +84,16 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
         columnId: 'quantity',
         searchKey: 'stock',
         type: 'array',
-        // Serialize array for URL
         serialize: (value: unknown) => {
           if (Array.isArray(value) && value.length > 0) {
             return value
           }
           return undefined
         },
-        // Deserialize - handle both array (from route schema) and string
         deserialize: (value: unknown) => {
-          // If it's already an array (from route schema), return it
           if (Array.isArray(value)) {
             return value
           }
-          // If it's a string, split by comma
           if (typeof value === 'string' && value.trim() !== '') {
             return value
               .split(',')
@@ -115,32 +108,9 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-  const categoryFilterValue = columnFilters.find((f) => f.id === 'category')
-    ?.value as string[] | undefined
-  const stockFilterValue = columnFilters.find((f) => f.id === 'quantity')
-    ?.value as string[] | undefined
-  const nameFilterValue = columnFilters.find((f) => f.id === 'name')?.value as
-    | string
-    | undefined
-  const minPriceFilterValue = columnFilters.find((f) => f.id === 'minPrice')
-    ?.value as string | undefined
-  const maxPriceFilterValue = columnFilters.find((f) => f.id === 'maxPrice')
-    ?.value as string | undefined
-
   const queryParams = {
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
-    search: nameFilterValue || (search.name as string | undefined),
-    category:
-      categoryFilterValue && categoryFilterValue.length > 0
-        ? categoryFilterValue
-        : undefined,
-    stock:
-      stockFilterValue && stockFilterValue.length > 0
-        ? stockFilterValue
-        : undefined,
-    minPrice: minPriceFilterValue || (search.minPrice as string | undefined),
-    maxPrice: maxPriceFilterValue || (search.maxPrice as string | undefined),
   }
 
   const {
@@ -186,7 +156,7 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
     },
     enableRowSelection: true,
     manualPagination: true,
-    manualFiltering: true,
+    manualFiltering: false, // Client-side filtering
     onPaginationChange,
     onColumnFiltersChange,
     onRowSelectionChange: setRowSelection,
@@ -273,15 +243,6 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
                 columns={columns.length}
                 rows={pagination.pageSize}
               />
-            ) : isStoreProductsError ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='text-destructive h-24 text-center'
-                >
-                  Error loading products. Please try again.
-                </TableCell>
-              </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -306,19 +267,26 @@ export function StoreProductsTable({ search, navigate }: DataTableProps) {
                   ))}
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
+            ) : null}
           </TableBody>
         </Table>
       </div>
+      {!isLoadingStoreProducts &&
+        !isStoreProductsError &&
+        !table.getRowModel().rows?.length && (
+          <EmptyState
+            title='No products found in this store'
+            description="This store doesn't have any products yet, or no products match your current filters."
+            size='md'
+          />
+        )}
+      {!isLoadingStoreProducts && isStoreProductsError && (
+        <EmptyState
+          title='Error loading products'
+          description='Error loading products from the server. Please try again.'
+          size='md'
+        />
+      )}
       <DataTablePagination table={table} className='mt-auto' />
       <DataTableBulkActions table={table} />
     </div>
@@ -333,7 +301,7 @@ const STOCK_STATUS = [
 
 const PRICE_RANGES = {
   MIN: [
-    { label: '$0+', value: '0' },
+    { label: '$2+', value: '2' },
     { label: '$10+', value: '10' },
     { label: '$50+', value: '50' },
     { label: '$100+', value: '100' },

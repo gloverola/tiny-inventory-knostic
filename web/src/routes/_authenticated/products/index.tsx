@@ -3,8 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Products } from '@/features/products'
 
 const productsSearchSchema = z.object({
-  page: z.number().optional().catch(1),
-  pageSize: z.number().optional().catch(10),
+  page: z.coerce.number().optional().catch(1),
+  pageSize: z.coerce.number().optional().catch(10),
   stock: z
     .union([
       // Handle comma-separated string
@@ -37,6 +37,8 @@ const productsSearchSchema = z.object({
     .catch([]),
   // Per-column text filter (example for product name)
   name: z.string().optional().catch(''),
+  minPrice: z.string().optional(),
+  maxPrice: z.string().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/products/')({
