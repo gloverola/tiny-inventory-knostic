@@ -23,9 +23,8 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
-import { categoriesQuery } from '@/features/categories/queries'
 import { storeProductsQuery } from '@/features/stores/queries'
-import { productsQuery } from '../queries'
+import { categoriesQuery, productsQuery } from '../queries'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { productsColumns as columns } from './products-columns'
 

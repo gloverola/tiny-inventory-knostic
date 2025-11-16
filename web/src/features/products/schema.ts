@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // Schema matching the backend pgTable definition
-export const productsSchema = z.object({
+const productsSchema = z.object({
   id: z.string().uuid(),
   storeId: z.string().uuid(),
   name: z.string().max(255),

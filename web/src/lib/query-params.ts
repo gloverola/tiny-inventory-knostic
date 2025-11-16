@@ -22,8 +22,6 @@ export function createParams(params: QueryParamsOptions): string {
   return queryParams.join('&')
 }
 
-export const combineParams = createParams
-
 export function createUrlWithParams(
   baseUrl: string,
   params: QueryParamsOptions

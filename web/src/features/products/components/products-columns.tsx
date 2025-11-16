@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
+import { LongText } from '@/components/long-text'
 import { type Product } from '../schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -20,7 +21,7 @@ export const productsColumns: ColumnDef<Product>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
-        className='translate-y-[2px]'
+        className='translate-y-0.5'
       />
     ),
     cell: ({ row }) => (
@@ -28,7 +29,7 @@ export const productsColumns: ColumnDef<Product>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
-        className='translate-y-[2px]'
+        className='translate-y-0.5'
       />
     ),
     enableSorting: false,
@@ -57,7 +58,7 @@ export const productsColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => (
       <div className='max-w-36 truncate font-medium'>
-        {row.getValue('name')}
+        <LongText>{row.getValue('name')}</LongText>
       </div>
     ),
     enableHiding: false,

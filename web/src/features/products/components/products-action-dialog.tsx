@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { categoriesQuery } from '@/features/categories/queries'
 import { storesQuery } from '@/features/stores/queries'
+import { categoriesQuery } from '../queries'
 import { type Product } from '../schema'
 
 const createFormSchema = (isStoreIdProvided: boolean) =>
