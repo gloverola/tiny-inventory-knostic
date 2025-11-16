@@ -1,284 +1,245 @@
-## Tiny Inventory | GLOVER OLAOLUWA
+# Tiny Inventory | GLOVER OLAOLUWA
 
 A full-stack inventory management system for tracking stores, analytics, and product catalogs. Built with Express, PostgreSQL, React 18, TanStack Router/Query, and TypeScript to showcase senior-level frontend architecture on top of a pragmatic API.
 
-Quick Start
+This README provides a comprehensive overview of the project's architecture, design decisions, and technical implementation, with a special focus on the frontend.
 
-Docker Deployment
+## Quick Start
+
+The entire development environment is containerized with Docker for one-command setup.
 
 ```bash
-# Start everything with a single command
+# Start the database, API, and frontend with a single command
 make dev
 ```
 
 The application will automatically:
 
-- Start PostgreSQL 16 with persisted volume
-- Run Drizzle migrations
-- Seed demo data (stores, categories, products)
-- Build & start the Express API on port 3000
-- Start the React SPA (Vite dev server) on port 5173
+1.  **Start PostgreSQL 16** with a persisted volume (`pgdata`).
+2.  **Run Drizzle migrations** to set up the database schema.
+3.  **Seed demo data** (stores, categories, products).
+4.  **Build & start the Express API** on `http://localhost:3000`.
+5.  **Start the React SPA** (Vite dev server) on `http://localhost:5173`.
 
-Access URLs:
+**Access URLs:**
 
-- Frontend: http://localhost:5173
-- API: http://localhost:3000
-- Health Check: http://localhost:3000/health
+- **Frontend:** [http://localhost:5173](http://localhost:5173)
+- **API:** [http://localhost:3000](http://localhost:3000)
+- **API Health Check:** [http://localhost:3000/health](http://localhost:3000/health)
 
-Note: First run usually takes 1–2 minutes while Docker builds images and seeds the database.
+> **Note:** The first run may take 1–2 minutes while Docker builds the images and seeds the database. Subsequent runs will be much faster.
 
-Running Tests Locally
+## System Architecture
 
-```bash
-cd server
-npm install
-npm test           # Run Vitest suite (controllers + integration)
-npm run test:watch # Watch mode during development
-```
-
-Architecture Overview
-
-System Diagram
+The application follows a classic three-tier architecture, containerized for portability and ease of development.
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                          CLIENT (Browser)                            │
-│     React 18 + TypeScript + Vite + Shadcn/Tailwind + TanStack Router │
-│     - Feature folders (dashboard, stores, store detail, products)    │
-│     - TanStack Query for server-state caching & mutations            │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │ HTTP/REST (Axios client)
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                         API LAYER (Express)                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                │
-│  │   Routes     │▶▶│  Zod Schemas │▶▶│ Error Handler │                │
-│  └──────────────┘  └──────────────┘  └──────────────┘                │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                  SERVICE LAYER (Business Logic)                      │
-│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐         │
-│  │  Stores      │     │  Products    │     │  Categories  │         │
-│  └──────────────┘     └──────────────┘     └──────────────┘         │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │ Drizzle ORM
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      DATABASE (PostgreSQL 16)                        │
-│           UUID primary keys, timestamps, soft delete flags           │
-└──────────────────────────────────────────────────────────────────────┘
+                                     ┌─────────────────────────────┐
+                                     │        Docker Network       │
+                                     │      (app-network bridge)   │
+                                     └─────────────┬───────────────┘
+                                                   │
+                           ┌───────────────────────┼───────────────────────┐
+                           │                       │                       │
+┌──────────────────────────▼──────────────┐ ┌──────▼───────────────────────┐ ┌──────▼───────────────────────┐
+│         Frontend (Vite SPA)             │ │          Backend (API)         │ │          Database            │
+│  - React 18, TypeScript               │ │  - Node.js 20, Express         │ │  - PostgreSQL 16             │
+│  - TanStack Router, Query, Table      │ │  - TypeScript, Zod             │ │  - Drizzle ORM & Migrations  │
+│  - Tailwind CSS, shadcn/ui            │ │  - Service/Route Pattern       │ │  - Persisted Volume (`pgdata`) │
+│  - Hosted on port 5173                │ │  - Hosted on port 3000         │ │  - Hosted on port 5432       │
+└───────────────────────────────────────┘ └────────────────────────────────┘ └────────────────────────────────┘
 ```
 
-Tech Stack Summary
+---
 
-Backend
+## Frontend Deep Dive
 
-- Runtime: Node.js 20 + TypeScript
-- Framework: Express with custom middleware + morgan logging
-- Database: PostgreSQL 16 with UUID primary keys
-- ORM: Drizzle ORM for type-safe SQL
-- Validation: Zod per route/controller
-- Testing: Vitest + Supertest (controllers + integration)
+The frontend is the core focus of this project, designed to demonstrate a modern, robust, and scalable architecture for building data-intensive applications.
 
-Frontend
+### Technology Stack
 
-- Framework: React 18 + TypeScript + Vite
-- Routing: TanStack Router (typed routes, loaders, error boundaries)
-- State Management: TanStack Query + Context Providers (`ThemeProvider`, `SearchProvider`, `ProductsProvider`, `StoresProvider`)
-- UI System: Shadcn UI components + Tailwind CSS tokens, light/dark theming via cookie-backed provider
-- Tables & Filtering: TanStack Table with custom toolbar, view options, bulk actions, URL-synced filters
-- Utilities: Axios client with retry + toast-driven optimistic UX, Sonner toasts, Lucide icons, command palette (⌘K) for navigation/search
+- **Framework:** **React 18** with **TypeScript** for a strongly-typed, component-based UI.
+- **Build Tool:** **Vite** for lightning-fast HMR (Hot Module Replacement) and optimized builds.
+- **Routing:** **TanStack Router** for type-safe, search-param-aware routing and nested layouts.
+- **Server State Management:** **TanStack Query** for caching, background refetching, mutations, and optimistic updates.
+- **Client State Management:** **React Context** and custom hooks for theme, layout, and search state.
+- **Data Tables:** **TanStack Table** for powerful, headless table logic.
+- **Forms:** **React Hook Form** with **Zod** for schema-based validation.
+- **UI Components:** **shadcn/ui** for accessible, unstyled component primitives.
+- **Styling:** **Tailwind CSS** for a utility-first styling workflow.
+- **Icons:** **Lucide React** for a comprehensive and lightweight icon set.
+- **API Client:** **Axios** for making HTTP requests to the backend.
 
-Infrastructure
+### Project Structure
 
-- Containerization: Docker + Docker Compose (db, API, SPA)
-- Database Tooling: Drizzle Kit migrations, seed scripts
-- Logging: morgan middleware with per-request timing
-- Dev Tooling: tsx for dev server, ESLint, Prettier, knip, cz, etc.
-
-Design Principles
-
-- **Frontend-first UX:** Feature folders for Dashboard, Stores, Store Detail, and Products keep screens cohesive with shared hooks and design primitives.
-- **URL as state:** `useTableUrlState` keeps pagination, global search, and faceted filters encoded in the URL so links remain shareable/bookmarkable.
-- **Type safety everywhere:** Shared Zod schemas → controller validation → generated TypeScript types for React Query hooks → strongly typed table columns.
-- **Separation of concerns:** Routes handle HTTP, services own business logic, hooks/providers own client-side state machines, UI primitives live under `components/`.
-- **Real-world ergonomics:** Command palette, bulk selection toolbars, modular dialogs/drawers, and theme-aware components mimic production-grade admin dashboards.
-- **Testing-in-mind:** Controller tests mock services for fast feedback; integration tests hit the real Express app to ensure contracts stay intact.
-
-API Documentation
-
-Endpoints
+The `web/` directory is organized by feature and function to promote scalability and maintainability.
 
 ```
-GET    /stores                     # List stores (paginated)
-POST   /stores                     # Create store
-GET    /stores/:id                 # Store details
-GET    /stores/:id/products        # Products scoped to a store (paginated + category filter)
-
-GET    /products                   # List products (search + category + stock filters)
-GET    /products/:id               # Product details
-POST   /products                   # Create product
-PATCH  /products/:id               # Update product (partial supported)
-DELETE /products/:id               # Delete product
-
-GET    /categories                 # List categories (feeds dropdowns)
-POST   /categories                 # Create category
-PATCH  /categories/:id             # Update category
-DELETE /categories/:id             # Delete category
-
-GET    /health                     # Health probe for Docker/devops
+web/
+├── public/                  # Static assets
+└── src/
+    ├── assets/              # Icons, logos
+    ├── components/          # Reusable, generic UI components
+    │   ├── data-table/      # Core table components (toolbar, pagination)
+    │   ├── layout/          # App layout (header, sidebar)
+    │   └── ui/              # shadcn/ui components
+    ├── config/              # App-wide configuration (e.g., fonts)
+    ├── context/             # Global context providers (Theme, Search)
+    ├── features/            # Business-specific features/views
+    │   ├── dashboard/       # Dashboard view and components
+    │   ├── products/        # Products feature (table, forms, dialogs)
+    │   └── stores/          # Stores feature (table, forms, store detail view)
+    ├── hooks/               # Reusable custom hooks (useDebounce, useMobile)
+    ├── lib/                 # Utility functions and libraries
+    ├── routes/              # TanStack Router route definitions
+    ├── services/            # API layer (Axios client, typed API calls)
+    └── stores/              # Client-side state stores (e.g., Zustand)
 ```
 
-Benefits:
+### Component Architecture
 
-- Predictable shapes keep the Axios client + React Query hooks simple (`data?.stores`, `data?.pagination`).
-- Pagination metadata always ships alongside data, enabling infinite scroll or server-driven paging.
-- Validation errors surface Zod paths/messages so UI forms can map them back to fields.
+Components are categorized to enforce a clear separation of concerns:
 
-Error Handling
+1.  **UI Primitives (`/components/ui`):** Raw, unstyled components from `shadcn/ui` (e.g., `Button`, `Dialog`, `Input`). They know nothing about the application's business logic.
+2.  **Generic Components (`/components`):** Compositions of UI primitives to create reusable components used across multiple features (e.g., `CommandMenu`, `ProfileDropdown`, `DataTable`). These are still business-logic-agnostic.
+3.  **Feature Components (`/features/*`):** Business-specific components that consume data and perform actions related to a particular domain (e.g., `ProductsTable`, `CreateStoreDialog`). They are composed of generic components and UI primitives.
 
-- `400 Bad Request` — Validation failures (Zod), malformed query/body.
-- `404 Not Found` — Missing stores/products.
-- `409 Conflict` — Database constraint issues (e.g., duplicate names) surfaced via error middleware.
-- `500 Internal Server Error` — Unexpected issues logged server-side.
+This layered approach allows for maximum reusability and a consistent look and feel, while isolating complex business logic within feature folders.
 
-Example validation error payload:
+### State Management
 
-```json
-{
-  "error": "Invalid request body",
-  "details": [
-    {
-      "path": ["price"],
-      "message": "Expected number, received string"
-    }
-  ]
-}
-```
+State is divided into two categories: **Server State** and **Client State**.
 
-Frontend Application
+- **Server State (TanStack Query):** Manages all data fetched from the API.
 
-Tech Stack
+  - **Caching:** API responses are cached to avoid redundant network requests. `staleTime` and `cacheTime` are configured for optimal freshness.
+  - **Mutations:** `useMutation` is used for `POST`, `PATCH`, and `DELETE` operations. It handles loading/error states and automatically invalidates relevant queries on success to refetch fresh data.
+  - **Query Keys:** A structured query key system (e.g., `['products', { page, search }]`) ensures that queries are unique and can be targeted for invalidation.
 
-- React 18 + TypeScript with Vite dev server and HMR.
-- TanStack Router for nested layouts, loader/error boundaries, and typed search params.
-- TanStack Query orchestrates server state, caching, background refetch, and mutation side effects.
-- Shadcn UI + Tailwind theme tokens for consistent spacing, typography, and semantic colors; `ThemeProvider` adds light/dark + system modes with cookie persistence.
-- Axios service layer with interceptors, retry logic for 5xx responses, and Sonner toasts for optimistic UX feedback.
-- Command palette (`CommandMenu`) wired to `SearchProvider` for ⌘K navigation, theme switching, and quick filtering.
+- **Client State (React Context & Hooks):** Manages UI-specific state that is not persisted on the server.
+  - `ThemeProvider`: Manages light/dark mode, persisting the choice to `localStorage`.
+  - `SearchProvider`: Powers the global command menu (`⌘K`).
+  - `LayoutProvider`: Manages the state of the sidebar (collapsed/expanded).
+  - **URL State:** For data table filters, sorting, and pagination, the URL is treated as the single source of truth via the `useTableUrlState` hook. This makes the UI state shareable and bookmarkable.
 
-Features
+### Routing (TanStack Router)
 
-Store Management
+TanStack Router provides a type-safe and powerful routing solution.
 
-- Stores list screen (`features/stores`) delivers a TanStack Table with column visibility toggles, bulk selection toolbar, and shadcn dialogs/drawers for create/edit flows.
-- URL-synced filtering (global filter + column filters) keeps search, pagination, and per-column filters shareable between teammates.
-- Store detail screen tabs expose analytics + scoped product management without leaving the page.
+- **Route Tree:** Routes are defined in the `src/routes` directory and automatically generated into a `routeTree.gen.ts` file.
+- **Layouts:** The `__root.tsx` file defines the root layout, which includes the main sidebar and header. Nested routes are rendered within this layout.
+- **Loaders:** Data can be pre-fetched in route loaders, though this project prefers fetching data in components with `useQuery` to leverage its caching and background refetching capabilities.
+- **Search Param Validation:** Zod schemas are used to validate and parse URL search parameters, providing type safety for filters and pagination.
 
-Product Management
+### Data Table System
 
-- Products table supports multi-criteria filtering (name search, category faceted filter, stock state filter) plus column sorting, pagination, and selection-aware bulk delete flows.
-- Create/Edit dialog uses React Hook Form + Zod to validate price/quantity, fetches categories/stores via React Query, and invalidates caches on success.
-- Store-level product tab reuses the same provider/table while constraining queries via route parameters.
+The data table is one of the most complex and powerful systems in the application.
 
-User Experience
+- **Core (`/components/data-table`):** Contains the building blocks:
+  - `DataTable`: The main wrapper that accepts columns and data.
+  - `Toolbar`: Provides search, filtering, and view options.
+  - `Pagination`: Handles page navigation.
+  - `TableSkeleton`: A skeleton loader that matches the table's structure, providing an excellent loading state UX.
+- **Feature Implementation (`/features/products/components/products-table.tsx`):**
+  - Defines the `columns` for the table, including cell renderers for actions (edit/delete buttons) and custom formatting.
+  - Fetches data using a `useQuery` hook that is synchronized with the URL state.
+  - Uses the `useDebounce` hook to prevent excessive API calls while the user is typing in the search bar.
+- **URL State Synchronization (`/hooks/use-table-url-state.ts`):** This custom hook is the key to the table's power. It synchronizes the table's state (pagination, sorting, filtering) with the URL's search parameters, providing a shareable and bookmarkable UX.
 
-- Command palette search, header search button, and keyboard shortcuts enhance navigation.
-- Navigation progress bar + table loading states give responsive feedback; error states surface descriptive copy.
-- Theme switch + profile dropdown mimic production-grade dashboards.
-- Empty states, bulk action toolbars, and confirm dialogs create polished flows even for edge cases.
+### Forms & Validation
 
-Design Decisions
+Forms are built using **React Hook Form** and **Zod** for a robust and type-safe experience.
 
-TanStack Query over Redux/Context
+- **Schema:** A Zod schema defines the shape and validation rules for the form data.
+- **Hooks:** `useForm` from React Hook Form manages the form's state, validation, and submission.
+- **Integration:** The `zodResolver` connects the Zod schema to React Hook Form, enabling automatic validation.
+- **Dynamic Schemas:** In the `ProductsActionDialog`, the Zod schema is created dynamically. The `storeId` field is only required if the dialog is opened from the global products page, but not when it's opened from a specific store's page. This showcases how to handle conditional validation.
 
-- Removes boilerplate for server state, keeps cache normalized, and exposes first-class support for mutations + background refetch.
-- Query keys mirror API filters, simplifying invalidation and ensuring lists stay current after create/edit/delete.
+### Design System & Theming
 
-TanStack Router over React Router
+- **Tailwind CSS:** Provides a utility-first framework for rapid and consistent styling.
+- **shadcn/ui:** Offers a set of accessible and unstyled component primitives that can be fully customized.
+- **Theming:** A custom `theme.css` file defines CSS variables for light and dark modes, which are toggled by the `ThemeProvider`. This provides a seamless and performant theme-switching experience.
 
-- Typed route APIs guarantee search params/URL states stay consistent with server filters.
-- Route-level loaders + error components simplify global error boundaries.
+---
 
-Tailwind + Shadcn over heavy component libraries
+## Backend Architecture
 
-- Utility classes + design tokens keep layout consistent while still allowing deep customization.
-- Shadcn primitives (dialog, dropdown, tabs, table, skeletons) accelerate development without sacrificing control.
+The backend is a lightweight Express server designed to be a pragmatic and scalable foundation for the frontend.
 
-Type-safe Axios Client
+### Technology Stack
 
-- Central `api.ts` sets base URL, retry strategy, and error normalization so components can focus on UX rather than wiring fetch details.
-- Consistent error objects let Sonner toasts and form helpers surface actionable copy.
+- **Runtime:** **Node.js 20** with **TypeScript**.
+- **Framework:** **Express** for routing and middleware.
+- **Database:** **PostgreSQL 16**.
+- **ORM:** **Drizzle ORM** for type-safe, SQL-like database queries.
+- **Validation:** **Zod** for validating request bodies, params, and query strings.
+- **Testing:** **Vitest** and **Supertest** for unit and integration testing.
 
-Testing Strategy
+### API Design
 
-Test Types
+- **RESTful Principles:** The API follows RESTful conventions for endpoints and HTTP methods.
+- **Service Layer:** Business logic is encapsulated in services (e.g., `products.service.ts`), keeping the route handlers thin and focused on request/response handling.
+- **Standardized Responses:** All successful responses follow a consistent structure (e.g., `{ "data": [...], "pagination": {...} }`), and errors are handled by a central middleware.
+- **Soft Deletes:** Products and other resources are soft-deleted by setting a `deletedAt` timestamp. All `SELECT` queries are filtered with `isNull(deletedAt)` to exclude deleted records. This preserves data history and allows for recovery.
 
-1. **Controller Tests** (`server/src/modules/**/ *.controller.test.ts`)
-   - Mock services to isolate request validation, status codes, and payload transformations (e.g., price coercion).
-   - Fast (~milliseconds) so they run on every change/watch cycle.
-2. **API Integration Tests** (`server/src/tests/api.integration.test.ts`)
-   - Supertest drives the real Express app to verify pagination, validation, and error handling without mocking.
-   - Ensures middleware (JSON parsing, error handler) and routes behave as a unit.
+---
 
-How to Run
+## Testing Strategy
 
-```bash
-cd server
-npm test            # Runs entire Vitest suite
-npm run test:watch  # Watch mode
-```
+- **Backend:**
+  - **Unit/Controller Tests:** Use Vitest to test individual controller functions, mocking the service layer to isolate validation and response logic.
+  - **Integration Tests:** Use Vitest and Supertest to test the full request/response cycle of the Express app, ensuring that routes, middleware, and services work together correctly.
+- **Frontend:**
+  - Currently, the frontend lacks automated tests. This is a key area for future improvement.
 
-Requirements:
+---
 
-- Node.js 20+ locally (or run via Docker)
-- PostgreSQL is mocked via Drizzle for controller tests; integration tests hit the Express app without needing a live DB thanks to seed fixtures.
+## Design Decisions & Trade-offs
 
-Coverage Approach
+| Decision                             | Reason                                                                                                    | Trade-off                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **TanStack Everything**              | Provides a cohesive, type-safe ecosystem for routing, server state, and tables.                           | Higher learning curve and potential for vendor lock-in compared to more disparate libraries.            |
+| **shadcn/ui over Component Library** | Full control over component styling and logic. Copy-paste model makes customization easy.                 | More initial setup required compared to a pre-styled library like MUI or Ant Design.                    |
+| **URL as State for Tables**          | Creates a shareable and bookmarkable UX, which is critical for collaborative data-driven apps.            | Requires custom hooks and careful state synchronization, adding complexity.                             |
+| **Drizzle ORM over Prisma**          | Offers a more SQL-like, type-safe query experience that feels closer to the database.                     | Younger ecosystem with fewer high-level abstractions (e.g., no built-in seeding library).               |
+| **Soft Deletes**                     | Preserves data integrity and history, allowing for auditing and recovery.                                 | Requires careful filtering on all `SELECT` queries to avoid exposing deleted data.                      |
+| **Faker.js for Dashboard**           | Allows for rapid UI development and demonstration of complex components without a fully-featured backend. | The UI is not representative of real data, which can be misleading. Requires a follow-up to wire it up. |
 
-- Route/controller tests verify Zod schemas, HTTP status codes, pagination metadata, and response shapes.
-- Integration tests ensure contract fidelity for `/stores`, `/products`, `/health`, and error edge cases.
-- Shared helpers avoid mocking Drizzle query builders to keep tests resilient to refactors.
+---
 
-Decisions & Trade-offs
+## Production Readiness & Future Enhancements
 
-Technology Choices
+This project serves as a strong foundation but is not yet production-ready.
 
-- **Express over heavier frameworks:** Keeps the API layer minimal while pairing nicely with Drizzle; the trade-off is rolling more middleware/structuring by hand.
-- **Drizzle ORM over Prisma/TypeORM:** SQL-first ergonomics make analytics queries easy to express, but the ecosystem is younger with fewer high-level abstractions.
-- **PostgreSQL over SQLite:** Demonstrates production-ready patterns (UUIDs, analytics queries) but requires Docker for contributors.
-- **UUID primary keys:** Avoids enumeration attacks and eases replication yet costs a few bytes per row; acceptable for this scale.
+### What's Missing
 
-Architecture Decisions
+1.  **Authentication & Authorization:** No user login or role-based access control.
+2.  **Comprehensive Frontend Testing:** No unit, integration, or end-to-end tests for the React application.
+3.  **Observability:** No structured logging, metrics, or tracing.
+4.  **CI/CD:** No automated pipeline for testing, building, and deploying.
 
-- **No repository layer:** Services speak directly to Drizzle, keeping the codebase lean; would reintroduce repositories if multiple data sources appear.
-- **Zod at the boundary:** Schemas provide runtime safety and descriptive errors for both backend and frontend forms.
-- **Shared URL/table hook:** Owning `useTableUrlState` brings powerful UX (shareable filters) but increases custom code to maintain.
-- **Cookie-backed theming:** Theme choices persist across sessions with zero backend requirements, but we must maintain the provider + command/menu wiring ourselves.
+### If I Had More Time (4-Week Plan)
 
-Production Readiness
+- **Week 1: Auth & Users:**
 
-What's Implemented
+  - Implement JWT-based authentication (login, logout, refresh tokens).
+  - Add a `users` table and protect all relevant API endpoints.
+  - Create a login page and manage auth state on the frontend.
 
-- CRUD APIs for stores/products/categories with validation + pagination.
-- React SPA with multi-screen layout, analytics dashboard, command palette, shareable filter URLs, and responsive design.
-- Seed scripts + Docker Compose for repeatable demo environments.
-- Logging + health checks for observability.
-- Vitest coverage on controllers + end-to-end API flows.
+- **Week 2: Frontend Testing:**
 
-What's Missing
+  - Set up Vitest and React Testing Library for the frontend.
+  - Write unit tests for critical hooks (`useDebounce`, `useTableUrlState`).
+  - Write integration tests for the data table and form components.
 
-- AuthN/AuthZ (JWT, RBAC) for multi-user deployments.
-- Dedicated API documentation (Swagger/OpenAPI) + SDK generation.
-- Real-time features (websockets, subscriptions) for live stock updates.
-- Automated frontend tests (component/E2E) and story-driven visual regression coverage.
-- Metrics/alerts (Prometheus, OpenTelemetry) for production observability.
+- **Week 3: Polish & Real Data:**
 
-If I Had More Time
+  - Replace all `faker.js` mock data with live API calls (e.g., on the dashboard).
+  - Add optimistic updates for all mutations to improve perceived performance.
+  - Implement real-time updates with WebSockets for inventory changes.
 
-- **Frontend enhancements:** Implement dedicated product detail/edit routes with inline validation, add saved filters + filter pills, and wire dashboard/store analytics to live API data instead of mocked constants.
-- **Performance upgrades:** Virtualize large tables, stream paginated queries, and prefetch linked resources while the user hovers navigational elements.
-- **UX polish:** Add debounced search everywhere, skeleton screens for analytics/cards, richer empty states with contextual CTAs, and optimistic updates instead of blanket query invalidations.
-- **Testing & tooling:** Introduce React Testing Library for data-table interactions, Playwright for end-to-end regression, and automated accessibility checks (axe) baked into CI.
+- **Week 4: Observability & Deployment:**
+  - Integrate a logging service (e.g., Pino) for structured JSON logs.
+  - Add a CI/CD pipeline (e.g., GitHub Actions) to automate testing and builds.
+  - Write a production-ready `Dockerfile` and deployment script.
