@@ -5,6 +5,7 @@ import useDebounce from '@/hooks/use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTableFacetedFilter } from './faceted-filter'
+import { DataTableSingleSelectFilter } from './single-select-filter'
 import { DataTableViewOptions } from './view-options'
 
 type DataTableToolbarProps<TData> = {
@@ -20,6 +21,15 @@ type DataTableToolbarProps<TData> = {
       icon?: React.ComponentType<{ className?: string }>
     }[]
   }[]
+  singleSelectFilters?: {
+    columnId: string
+    title: string
+    options: {
+      label: string
+      value: string
+      icon?: React.ComponentType<{ className?: string }>
+    }[]
+  }[]
 }
 
 export function DataTableToolbar<TData>({
@@ -27,6 +37,7 @@ export function DataTableToolbar<TData>({
   searchPlaceholder = 'Search...',
   searchKey,
   filters = [],
+  singleSelectFilters = [],
 }: DataTableToolbarProps<TData>) {
   const [searchValue, setSearchValue] = useState('')
   const debouncedSearchValue = useDebounce(searchValue, 500)
@@ -57,6 +68,18 @@ export function DataTableToolbar<TData>({
             if (!column) return null
             return (
               <DataTableFacetedFilter
+                key={filter.columnId}
+                column={column}
+                title={filter.title}
+                options={filter.options}
+              />
+            )
+          })}
+          {singleSelectFilters.map((filter) => {
+            const column = table.getColumn(filter.columnId)
+            if (!column) return null
+            return (
+              <DataTableSingleSelectFilter
                 key={filter.columnId}
                 column={column}
                 title={filter.title}

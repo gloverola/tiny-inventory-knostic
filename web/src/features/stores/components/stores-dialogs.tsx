@@ -1,4 +1,3 @@
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { StoresImportDialog } from './stores-import-dialog'
 import { TasksMutateDrawer } from './stores-mutate-drawer'
@@ -49,10 +48,6 @@ export function StoresDialogs() {
               setTimeout(() => {
                 setCurrentRow(null)
               }, 500)
-              showSubmittedData(
-                currentRow,
-                'The following store has been deleted:'
-              )
             }}
             className='max-w-md'
             title={`Delete store: ${currentRow.name}?`}

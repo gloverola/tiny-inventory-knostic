@@ -160,4 +160,19 @@ export const productsColumns: ColumnDef<Product>[] = [
     id: 'actions',
     cell: DataTableRowActions,
   },
+  // Hidden filter columns for price range
+  {
+    id: 'minPrice',
+    accessorFn: (row) => row.price,
+    enableHiding: true,
+    enableSorting: false,
+    enableColumnFilter: true,
+  },
+  {
+    id: 'maxPrice',
+    accessorFn: (row) => row.price,
+    enableHiding: true,
+    enableSorting: false,
+    enableColumnFilter: true,
+  },
 ]

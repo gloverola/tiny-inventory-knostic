@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
 import {
   type SortingState,
   type VisibilityState,
@@ -23,16 +24,18 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
-import { categoriesQuery, productsQuery } from '../queries'
-import { DataTableBulkActions } from './data-table-bulk-actions'
-import { productsColumns as columns } from './products-columns'
+import { DataTableBulkActions } from '@/features/products/components/data-table-bulk-actions'
+import { productsColumns as columns } from '@/features/products/components/products-columns'
+import { categoriesQuery } from '@/features/products/queries'
+import { storeProductsQuery } from '@/features/stores/queries'
 
 type DataTableProps = {
   search: Record<string, unknown>
   navigate: NavigateFn
 }
 
-export function ProductsTable({ search, navigate }: DataTableProps) {
+export function StoreProductsTable({ search, navigate }: DataTableProps) {
+  const { storeId } = useParams({ from: '/_authenticated/stores/$storeId' })
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     minPrice: false,
@@ -112,7 +115,6 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-  // Build query params from columnFilters directly (workaround for URL sync issue)
   const categoryFilterValue = columnFilters.find((f) => f.id === 'category')
     ?.value as string[] | undefined
   const stockFilterValue = columnFilters.find((f) => f.id === 'quantity')
@@ -142,17 +144,25 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
   }
 
   const {
-    data: productsData,
-    isLoading,
-    isError,
-  } = useQuery(productsQuery(queryParams))
+    data: storeProductsData,
+    isLoading: isLoadingStoreProducts,
+    isError: isStoreProductsError,
+  } = useQuery(
+    storeProductsQuery(
+      storeId,
+      {
+        enabled: !!storeId,
+      },
+      queryParams
+    )
+  )
 
   const { data: categoriesData } = useQuery(
     categoriesQuery({ page: 1, limit: 100 })
   )
 
-  const tableData = productsData?.products ?? []
-  const rowCount = productsData?.pagination?.total ?? 0
+  const tableData = (storeProductsData as any)?.products ?? []
+  const rowCount = (storeProductsData as any)?.pagination?.total ?? 0
 
   const categoryOptions =
     categoriesData?.items
@@ -258,12 +268,12 @@ export function ProductsTable({ search, navigate }: DataTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoadingStoreProducts ? (
               <TableSkeleton
                 columns={columns.length}
                 rows={pagination.pageSize}
               />
-            ) : isError ? (
+            ) : isStoreProductsError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

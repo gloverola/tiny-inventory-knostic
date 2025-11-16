@@ -1,15 +1,14 @@
-import { getRouteApi, useParams } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { ProductsDialogs } from '@/features/products/components/products-dialogs'
 import { ProductsPrimaryButtons } from '@/features/products/components/products-primary-buttons'
 import { ProductsProvider } from '@/features/products/components/products-provider'
-import { ProductsTable } from '@/features/products/components/products-table'
+import { StoreProductsTable } from './products-table'
 
 const route = getRouteApi('/_authenticated/stores/$storeId')
 
 export function StoreProducts() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const { storeId } = useParams({ from: '/_authenticated/stores/$storeId' })
 
   return (
     <ProductsProvider>
@@ -23,7 +22,7 @@ export function StoreProducts() {
           </div>
           <ProductsPrimaryButtons />
         </div>
-        <ProductsTable search={search} navigate={navigate} storeId={storeId} />
+        <StoreProductsTable search={search} navigate={navigate} />
       </div>
 
       <ProductsDialogs />
