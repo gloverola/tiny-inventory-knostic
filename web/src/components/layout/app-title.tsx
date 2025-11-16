@@ -26,7 +26,7 @@ export function AppTitle() {
               className='grid flex-1 text-start text-sm leading-tight'
             >
               <span className='truncate font-bold'>Tiny Inventory</span>
-              <span className='truncate text-xs'>Glover</span>
+              <span className='truncate text-xs'>Glover Olaoluwa</span>
             </Link>
             <ToggleSidebar />
           </div>
